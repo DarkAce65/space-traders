@@ -1492,6 +1492,11 @@ once@^1.3.0:
   dependencies:
     wrappy "1"
 
+openapi-fetch@^0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/openapi-fetch/-/openapi-fetch-0.1.4.tgz#889c5fe96c8d73a5209784a7a8bd02ff7cdbc9f7"
+  integrity sha512-3usuk7JlrYMbDWZhLhPBOyt+S41TyCEH4oV4qzRmCrmQLveYN3sYjoVS9SNsL7WV8ApdLzwMmm0o+xAnsFFVeg==
+
 openapi-typescript@^6.2.4:
   version "6.2.4"
   resolved "https://registry.yarnpkg.com/openapi-typescript/-/openapi-typescript-6.2.4.tgz#10b2f8e989f963520d4bfc1e8b80316c7ae0db2b"

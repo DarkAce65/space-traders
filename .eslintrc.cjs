@@ -27,6 +27,10 @@ module.exports = {
       {
         'newlines-between': 'always',
         groups: ['builtin', 'external', 'internal', 'type', ['parent', 'sibling'], 'index'],
+        pathGroups: [
+          { pattern: 'vite', group: 'external', position: 'before' },
+          { pattern: '@/**', group: 'internal' },
+        ],
         pathGroupsExcludedImportTypes: ['builtin'],
         alphabetize: { order: 'asc', caseInsensitive: false },
       },

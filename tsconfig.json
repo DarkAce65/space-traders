@@ -5,6 +5,8 @@
     "module": "ESNext",
     "skipLibCheck": true,
 
+    "paths": { "@/*": ["./generated-schema/*"] },
+
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
