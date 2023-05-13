@@ -1,14 +1,48 @@
+const prettierConfig = require('./prettier.config.cjs');
+
 module.exports = {
-  env: { browser: true, es2020: true },
+  env: { browser: true, es2020: true, node: true },
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:react-hooks/recommended',
+    'prettier',
+    'plugin:prettier/recommended',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
-  plugins: ['react-refresh'],
+  plugins: ['react-refresh', 'prettier', 'import'],
   rules: {
+    '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/no-use-before-define': ['error', 'nofunc'],
+    '@typescript-eslint/no-var-requires': 'off',
+    eqeqeq: 'warn',
+    'guard-for-in': 'error',
+    'import/first': 'warn',
+    'import/newline-after-import': 'warn',
+    'import/no-anonymous-default-export': 'off',
+    'import/order': [
+      'warn',
+      {
+        'newlines-between': 'always',
+        groups: ['builtin', 'external', 'internal', 'type', ['parent', 'sibling'], 'index'],
+        pathGroupsExcludedImportTypes: ['builtin'],
+        alphabetize: { order: 'asc', caseInsensitive: false },
+      },
+    ],
+    'no-console': 'off',
+    'no-duplicate-imports': 'warn',
+    'no-multiple-empty-lines': ['warn', { max: 1 }],
+    'no-shadow': 'error',
+    'no-var': 'error',
+    'object-shorthand': 'warn',
+    'one-var': ['warn', 'never'],
+    'prefer-const': 'warn',
+    'prefer-template': 'warn',
+    'prettier/prettier': ['warn', prettierConfig],
     'react-refresh/only-export-components': 'warn',
+    'sort-imports': ['warn', { ignoreDeclarationSort: true }],
+    'spaced-comment': ['warn', 'always', { markers: ['/'] }],
   },
-}
+};
