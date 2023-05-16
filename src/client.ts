@@ -1,5 +1,5 @@
 import Bottleneck from 'bottleneck';
-import createClient from 'openapi-fetch';
+import createClient, { FetchResponse } from 'openapi-fetch';
 
 import { paths } from '@/schema';
 
@@ -15,3 +15,10 @@ export const client = new Proxy(baseClient, {
     return limiter.wrap(baseClient[key]);
   },
 });
+
+export const unwrapDataOrThrow = <T>(response: FetchResponse<T>) => {
+  if (!response.data) {
+    throw new Error(['Missing data', response.error].join(' '));
+  }
+  return response.data;
+};
