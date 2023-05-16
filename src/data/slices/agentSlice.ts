@@ -1,9 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import { registerAgent } from './globalActions';
-import { getAuthToken } from './globalSelectors';
-import { createAppAsyncThunk } from './storeUtils';
-import { client, unwrapDataOrThrow } from '../client';
+import { client, unwrapDataOrThrow } from '../../client';
+import { registerAgent } from '../actions';
+import { getAuthToken } from '../selectors';
+import { createAppAsyncThunk } from '../storeUtils';
 
 export interface AgentState {
   accountId: string;

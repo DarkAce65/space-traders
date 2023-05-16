@@ -1,6 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
-import { registerAgent } from './globalActions';
+import { registerAgent } from '../actions';
 
 export interface AuthState {
   token: string | null;
