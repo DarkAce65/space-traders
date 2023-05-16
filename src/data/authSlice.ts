@@ -2,7 +2,8 @@ import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
 import { paths } from '@/schema';
 
-import { RootState, createAppAsyncThunk } from './store';
+import { RootState } from './store';
+import { createAppAsyncThunk } from './storeUtils';
 import { client } from '../client';
 
 interface AuthState {

@@ -1,11 +1,8 @@
-import { configureStore, createAsyncThunk } from '@reduxjs/toolkit';
-import { TypedUseSelectorHook, useSelector } from 'react-redux';
+import { combineReducers, configureStore } from '@reduxjs/toolkit';
 
 import auth from './authSlice';
 
-export const createStore = () => configureStore({ devTools: true, reducer: { auth } });
+const reducer = combineReducers({ auth });
+export const createStore = () => configureStore({ devTools: true, reducer });
 
-export type RootState = ReturnType<ReturnType<typeof createStore>['getState']>;
-
-export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
-export const createAppAsyncThunk = createAsyncThunk.withTypes<{ state: RootState }>();
+export type RootState = ReturnType<typeof reducer>;
