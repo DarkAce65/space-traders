@@ -12,11 +12,10 @@ export interface AgentState {
   credits: number;
 }
 
-export const fetchAgent = createAppAsyncThunk('agent/fetch', (_, { getState }) => {
+export const fetchAgent = createAppAsyncThunk('agent/fetch', async (_, { getState }) => {
   const token = getAuthToken(getState());
-  return client
-    .get('/my/agent', { headers: { Authorization: `Bearer ${token}` } })
-    .then(unwrapDataOrThrow);
+  const response = await client.get('/my/agent', { headers: { Authorization: `Bearer ${token}` } });
+  return unwrapDataOrThrow(response);
 });
 
 const initialState: AgentState = {
