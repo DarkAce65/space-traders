@@ -1,13 +1,10 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
 import { registerAgent } from './globalActions';
-import { RootState } from './store';
 
 export interface AuthState {
   token: string | null;
 }
-
-export const getAuthToken = (state: RootState) => state.auth.token;
 
 const initialState: AuthState = { token: null };
 

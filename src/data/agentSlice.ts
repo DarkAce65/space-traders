@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import { getAuthToken } from './authSlice';
 import { registerAgent } from './globalActions';
+import { getAuthToken } from './globalSelectors';
 import { createAppAsyncThunk } from './storeUtils';
 import { client, unwrapDataOrThrow } from '../client';
 
