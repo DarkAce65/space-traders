@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-type AgentState = {
+export type AgentState = {
   accountId: string;
   agentName: string;
   headquarters: string;
