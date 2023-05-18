@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, isAnyOf } from '@reduxjs/toolkit';
 
 import { external } from '@/schema';
 
@@ -111,26 +111,6 @@ const universeSlice = createSlice({
           }
         }
       })
-      .addCase(fetchWaypoint.fulfilled, (state, action) => {
-        const waypoint = action.payload.data;
-        if (
-          !Object.prototype.hasOwnProperty.call(state.waypoints, waypoint.symbol) ||
-          !state.waypoints[waypoint.symbol].isExplored
-        ) {
-          state.waypoints[waypoint.symbol] = { isExplored: true, data: waypoint };
-        }
-      })
-      .addCase(fetchSystemWaypoints.fulfilled, (state, action) => {
-        const waypoints = action.payload.data;
-        for (const waypoint of waypoints) {
-          if (
-            !Object.prototype.hasOwnProperty.call(state.waypoints, waypoint.symbol) ||
-            !state.waypoints[waypoint.symbol].isExplored
-          ) {
-            state.waypoints[waypoint.symbol] = { isExplored: true, data: waypoint };
-          }
-        }
-      })
       .addCase(scanSystems.fulfilled, (state, action) => {
         const scannedSystems = action.payload.data.systems;
         for (const system of scannedSystems) {
@@ -139,17 +119,30 @@ const universeSlice = createSlice({
           }
         }
       })
-      .addCase(scanWaypoints.fulfilled, (state, action) => {
-        const scannedWaypoints = action.payload.data.waypoints;
-        for (const waypoint of scannedWaypoints) {
-          if (
-            !Object.prototype.hasOwnProperty.call(state.waypoints, waypoint.symbol) ||
-            !state.waypoints[waypoint.symbol].isExplored
-          ) {
-            state.waypoints[waypoint.symbol] = { isExplored: true, data: waypoint };
+      .addMatcher(
+        isAnyOf(fetchWaypoint.fulfilled, fetchSystemWaypoints.fulfilled, scanWaypoints.fulfilled),
+        (state, action) => {
+          let waypoints: Waypoint[];
+          if (fetchWaypoint.fulfilled.match(action)) {
+            waypoints = [action.payload.data];
+          } else if (fetchSystemWaypoints.fulfilled.match(action)) {
+            waypoints = action.payload.data;
+          } else if (scanWaypoints.fulfilled.match(action)) {
+            waypoints = action.payload.data.waypoints;
+          } else {
+            throw new Error('Unexpected action handled');
+          }
+
+          for (const waypoint of waypoints) {
+            if (
+              !Object.prototype.hasOwnProperty.call(state.waypoints, waypoint.symbol) ||
+              !state.waypoints[waypoint.symbol].isExplored
+            ) {
+              state.waypoints[waypoint.symbol] = { isExplored: true, data: waypoint };
+            }
           }
         }
-      });
+      );
   },
 });
 
