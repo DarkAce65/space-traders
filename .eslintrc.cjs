@@ -14,7 +14,10 @@ module.exports = {
     'plugin:prettier/recommended',
   ],
   parser: '@typescript-eslint/parser',
-  parserOptions: { project: true, tsconfigRootDir: __dirname },
+  parserOptions: {
+    project: ['./tsconfig.json', './tsconfig.node.json'],
+    tsconfigRootDir: __dirname,
+  },
   plugins: ['react-refresh', 'prettier', 'import'],
   settings: { react: { version: 'detect' } },
   rules: {

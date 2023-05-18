@@ -34,7 +34,7 @@ const getWaypoints = (state: RootState) => state.universe.waypoints;
 export const fetchSystem = createAppAsyncThunk(
   'universe/fetchSystem',
   async (systemSymbol: string, { getState }) => {
-    const token = getAuthToken(getState());
+    const token = getAuthToken(getState())!;
     const response = await client.get('/systems/{systemSymbol}', {
       headers: { Authorization: `Bearer ${token}` },
       params: { path: { systemSymbol } },
@@ -42,8 +42,13 @@ export const fetchSystem = createAppAsyncThunk(
     return unwrapDataOrThrow(response);
   },
   {
-    condition: (systemSymbol, { getState }) =>
-      !Object.prototype.hasOwnProperty.call(getSystems(getState()), systemSymbol),
+    condition: (systemSymbol, { getState }) => {
+      const state = getState();
+      return (
+        getAuthToken(state) !== null &&
+        !Object.prototype.hasOwnProperty.call(getSystems(state), systemSymbol)
+      );
+    },
   }
 );
 
@@ -53,7 +58,7 @@ export const fetchWaypoint = createAppAsyncThunk(
     { systemSymbol, waypointSymbol }: { systemSymbol: string; waypointSymbol: string },
     { getState }
   ) => {
-    const token = getAuthToken(getState());
+    const token = getAuthToken(getState())!;
     const response = await client.get('/systems/{systemSymbol}/waypoints/{waypointSymbol}', {
       headers: { Authorization: `Bearer ${token}` },
       params: { path: { systemSymbol, waypointSymbol } },
@@ -62,6 +67,7 @@ export const fetchWaypoint = createAppAsyncThunk(
   },
   {
     condition: ({ waypointSymbol }, { getState }) =>
+      getAuthToken(getState()) !== null &&
       !Object.prototype.hasOwnProperty.call(getWaypoints(getState()), waypointSymbol),
   }
 );
@@ -69,13 +75,13 @@ export const fetchWaypoint = createAppAsyncThunk(
 export const fetchSystemWaypoints = createAppAsyncThunk(
   'universe/fetchSystemWaypoints',
   (systemSymbol: string, { getState }) => {
-    const token = getAuthToken(getState());
+    const token = getAuthToken(getState())!;
     return pagedFetchAll(
       (page, limit) =>
         client
           .get('/systems/{systemSymbol}/waypoints', {
             headers: { Authorization: `Bearer ${token}` },
-            params: { path: { systemSymbol }, query: { limit, page } },
+            params: { path: { systemSymbol }, query: { page, limit } },
           })
           .then(unwrapDataOrThrow)
           .then((response) => ({ data: response.data, total: response.meta.total })),
@@ -84,9 +90,11 @@ export const fetchSystemWaypoints = createAppAsyncThunk(
   },
   {
     condition: (systemSymbol, { getState }) => {
-      const systemsBySymbol = getSystems(getState());
+      const state = getState();
+      const systemsBySymbol = getSystems(state);
       return (
-        !Object.prototype.hasOwnProperty.call(systemsBySymbol, systemSymbol) ||
+        (getAuthToken(state) !== null &&
+          !Object.prototype.hasOwnProperty.call(systemsBySymbol, systemSymbol)) ||
         !systemsBySymbol[systemSymbol].isExplored
       );
     },

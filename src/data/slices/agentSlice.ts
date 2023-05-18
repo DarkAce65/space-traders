@@ -14,11 +14,17 @@ export interface AgentState {
   credits: number;
 }
 
-export const fetchAgent = createAppAsyncThunk('agent/fetch', async (_, { getState }) => {
-  const token = getAuthToken(getState());
-  const response = await client.get('/my/agent', { headers: { Authorization: `Bearer ${token}` } });
-  return unwrapDataOrThrow(response);
-});
+export const fetchAgent = createAppAsyncThunk(
+  'agent/fetch',
+  async (_, { getState }) => {
+    const token = getAuthToken(getState())!;
+    const response = await client.get('/my/agent', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return unwrapDataOrThrow(response);
+  },
+  { condition: (_, { getState }) => getAuthToken(getState()) !== null }
+);
 
 const initialState: AgentState = {
   accountId: '',
