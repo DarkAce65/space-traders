@@ -8,3 +8,4 @@ const reducer = combineReducers({ agent, auth, universe });
 export const createStore = () => configureStore({ devTools: true, reducer });
 
 export type RootState = ReturnType<typeof reducer>;
+export type AppDispatch = ReturnType<typeof createStore>['dispatch'];
