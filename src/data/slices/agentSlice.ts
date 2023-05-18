@@ -2,8 +2,8 @@ import { createSlice, isAnyOf } from '@reduxjs/toolkit';
 
 import { external } from '@/schema';
 
-import { client, unwrapDataOrThrow } from '../../client';
 import { registerAgent } from '../actions';
+import { client, unwrapDataOrThrow } from '../client';
 import { getAuthToken } from '../selectors';
 import { createAppAsyncThunk } from '../storeUtils';
 

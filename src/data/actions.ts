@@ -1,7 +1,7 @@
 import { paths } from '@/schema';
 
+import { client, unwrapDataOrThrow } from './client';
 import { createAppAsyncThunk } from './storeUtils';
-import { client, unwrapDataOrThrow } from '../client';
 
 type RegisterAgentBody = NonNullable<
   paths['/register']['post']['requestBody']
