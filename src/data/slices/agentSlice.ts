@@ -1,4 +1,6 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, isAnyOf } from '@reduxjs/toolkit';
+
+import { external } from '@/schema';
 
 import { client, unwrapDataOrThrow } from '../../client';
 import { registerAgent } from '../actions';
@@ -30,8 +32,17 @@ const agentSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(registerAgent.fulfilled, (state, action) => {
-      const { accountId, symbol, headquarters, credits } = action.payload.data.agent;
+    builder.addMatcher(isAnyOf(registerAgent.fulfilled, fetchAgent.fulfilled), (state, action) => {
+      let agent: external['../models/Agent.json'];
+      if (registerAgent.fulfilled.match(action)) {
+        agent = action.payload.data.agent;
+      } else if (fetchAgent.fulfilled.match(action)) {
+        agent = action.payload.data;
+      } else {
+        throw new Error('Unexpected action handled');
+      }
+
+      const { accountId, symbol, headquarters, credits } = agent;
       state.accountId = accountId;
       state.agentName = symbol;
       state.headquarters = headquarters;
