@@ -1,18 +1,24 @@
 const prettierConfig = require('./prettier.config.cjs');
 
 module.exports = {
+  root: true,
   env: { browser: true, es2020: true, node: true },
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended-requiring-type-checking',
+    'plugin:react/recommended',
+    'plugin:react/jsx-runtime',
     'plugin:react-hooks/recommended',
     'prettier',
     'plugin:prettier/recommended',
   ],
   parser: '@typescript-eslint/parser',
-  parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+  parserOptions: { project: true, tsconfigRootDir: __dirname },
   plugins: ['react-refresh', 'prettier', 'import'],
+  settings: { react: { version: 'detect' } },
   rules: {
+    '@typescript-eslint/no-floating-promises': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/no-use-before-define': ['error', 'nofunc'],
