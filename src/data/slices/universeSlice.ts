@@ -6,7 +6,7 @@ import pick from './pick';
 import { scanSystems, scanWaypoints } from '../actions';
 import { client, unwrapDataOrThrow } from '../client';
 import { pagedFetchAll } from '../pagedFetchAll';
-import { getAuthToken } from '../selectors';
+import { getAuthTokenOrThrow, getIsAuthTokenReady } from '../selectors';
 import { RootState } from '../store';
 import { createAppAsyncThunk } from '../storeUtils';
 
@@ -35,7 +35,7 @@ const getWaypoints = (state: RootState) => state.universe.waypoints;
 export const fetchSystem = createAppAsyncThunk(
   'universe/fetchSystem',
   async (systemSymbol: string, { getState }) => {
-    const token = getAuthToken(getState())!;
+    const token = getAuthTokenOrThrow(getState());
     const response = await client.get('/systems/{systemSymbol}', {
       headers: { Authorization: `Bearer ${token}` },
       params: { path: { systemSymbol } },
@@ -45,9 +45,11 @@ export const fetchSystem = createAppAsyncThunk(
   {
     condition: (systemSymbol, { getState }) => {
       const state = getState();
+      const systems = getSystems(state);
       return (
-        getAuthToken(state) !== null &&
-        !Object.prototype.hasOwnProperty.call(getSystems(state), systemSymbol)
+        getIsAuthTokenReady(state) &&
+        (!Object.prototype.hasOwnProperty.call(systems, systemSymbol) ||
+          !systems[systemSymbol].isHydrated)
       );
     },
   }
@@ -59,7 +61,7 @@ export const fetchWaypoint = createAppAsyncThunk(
     { systemSymbol, waypointSymbol }: { systemSymbol: string; waypointSymbol: string },
     { getState }
   ) => {
-    const token = getAuthToken(getState())!;
+    const token = getAuthTokenOrThrow(getState());
     const response = await client.get('/systems/{systemSymbol}/waypoints/{waypointSymbol}', {
       headers: { Authorization: `Bearer ${token}` },
       params: { path: { systemSymbol, waypointSymbol } },
@@ -67,16 +69,22 @@ export const fetchWaypoint = createAppAsyncThunk(
     return unwrapDataOrThrow(response);
   },
   {
-    condition: ({ waypointSymbol }, { getState }) =>
-      getAuthToken(getState()) !== null &&
-      !Object.prototype.hasOwnProperty.call(getWaypoints(getState()), waypointSymbol),
+    condition: ({ waypointSymbol }, { getState }) => {
+      const state = getState();
+      const waypoints = getWaypoints(state);
+      return (
+        getIsAuthTokenReady(state) &&
+        (!Object.prototype.hasOwnProperty.call(waypoints, waypointSymbol) ||
+          !waypoints[waypointSymbol].isHydrated)
+      );
+    },
   }
 );
 
 export const fetchSystemWaypoints = createAppAsyncThunk(
   'universe/fetchSystemWaypoints',
   (systemSymbol: string, { getState }) => {
-    const token = getAuthToken(getState())!;
+    const token = getAuthTokenOrThrow(getState());
     return pagedFetchAll(
       (page, limit) =>
         client
@@ -89,17 +97,7 @@ export const fetchSystemWaypoints = createAppAsyncThunk(
       20
     );
   },
-  {
-    condition: (systemSymbol, { getState }) => {
-      const state = getState();
-      const systemsBySymbol = getSystems(state);
-      return (
-        (getAuthToken(state) !== null &&
-          !Object.prototype.hasOwnProperty.call(systemsBySymbol, systemSymbol)) ||
-        !systemsBySymbol[systemSymbol].isHydrated
-      );
-    },
-  }
+  { condition: (_, { getState }) => getIsAuthTokenReady(getState()) }
 );
 
 const initialState: UniverseState = { systems: {}, waypoints: {} };

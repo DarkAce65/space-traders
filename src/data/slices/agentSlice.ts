@@ -4,7 +4,7 @@ import { external } from '@/schema';
 
 import { registerAgent } from '../actions';
 import { client, unwrapDataOrThrow } from '../client';
-import { getAuthToken } from '../selectors';
+import { getAuthTokenOrThrow, getIsAuthTokenReady } from '../selectors';
 import { createAppAsyncThunk } from '../storeUtils';
 
 export interface AgentState {
@@ -17,13 +17,13 @@ export interface AgentState {
 export const fetchAgent = createAppAsyncThunk(
   'agent/fetch',
   async (_, { getState }) => {
-    const token = getAuthToken(getState())!;
+    const token = getAuthTokenOrThrow(getState());
     const response = await client.get('/my/agent', {
       headers: { Authorization: `Bearer ${token}` },
     });
     return unwrapDataOrThrow(response);
   },
-  { condition: (_, { getState }) => getAuthToken(getState()) !== null }
+  { condition: (_, { getState }) => getIsAuthTokenReady(getState()) }
 );
 
 const initialState: AgentState = {

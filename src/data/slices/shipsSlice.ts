@@ -4,7 +4,7 @@ import { external } from '@/schema';
 
 import { client, unwrapDataOrThrow } from '../client';
 import { pagedFetchAll } from '../pagedFetchAll';
-import { getAuthToken } from '../selectors';
+import { getAuthTokenOrThrow, getIsAuthTokenReady } from '../selectors';
 import { createAppAsyncThunk } from '../storeUtils';
 
 type Ship = external['../models/Ship.json'];
@@ -16,7 +16,7 @@ export interface ShipsState {
 export const fetchAllShips = createAppAsyncThunk(
   'ships/fetchAllShips',
   async (_, { getState }) => {
-    const token = getAuthToken(getState())!;
+    const token = getAuthTokenOrThrow(getState());
     return pagedFetchAll(
       (page, limit) =>
         client
@@ -29,7 +29,7 @@ export const fetchAllShips = createAppAsyncThunk(
       20
     );
   },
-  { condition: (_, { getState }) => getAuthToken(getState()) !== null }
+  { condition: (_, { getState }) => getIsAuthTokenReady(getState()) }
 );
 
 const initialState: ShipsState = { ships: {} };
