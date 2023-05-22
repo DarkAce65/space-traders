@@ -6,7 +6,7 @@ import pick from '../../utils/pick';
 import { scanSystems, scanWaypoints } from '../actions';
 import { client, unwrapDataOrThrow } from '../client';
 import { pagedFetchAll } from '../pagedFetchAll';
-import { getAuthTokenOrThrow, getIsAuthTokenReady } from '../selectors';
+import { getAuthHeaderOrThrow, getIsAuthTokenReady } from '../selectors';
 import { RootState } from '../store';
 import { createAppAsyncThunk } from '../storeUtils';
 
@@ -35,9 +35,9 @@ const getWaypoints = (state: RootState) => state.universe.waypoints;
 export const fetchSystem = createAppAsyncThunk(
   'universe/fetchSystem',
   async (systemSymbol: string, { getState }) => {
-    const token = getAuthTokenOrThrow(getState());
+    const headers = getAuthHeaderOrThrow(getState());
     const response = await client.get('/systems/{systemSymbol}', {
-      headers: { Authorization: `Bearer ${token}` },
+      headers,
       params: { path: { systemSymbol } },
     });
     return unwrapDataOrThrow(response);
@@ -61,9 +61,9 @@ export const fetchWaypoint = createAppAsyncThunk(
     { systemSymbol, waypointSymbol }: { systemSymbol: string; waypointSymbol: string },
     { getState }
   ) => {
-    const token = getAuthTokenOrThrow(getState());
+    const headers = getAuthHeaderOrThrow(getState());
     const response = await client.get('/systems/{systemSymbol}/waypoints/{waypointSymbol}', {
-      headers: { Authorization: `Bearer ${token}` },
+      headers,
       params: { path: { systemSymbol, waypointSymbol } },
     });
     return unwrapDataOrThrow(response);
@@ -84,12 +84,12 @@ export const fetchWaypoint = createAppAsyncThunk(
 export const fetchSystemWaypoints = createAppAsyncThunk(
   'universe/fetchSystemWaypoints',
   (systemSymbol: string, { getState }) => {
-    const token = getAuthTokenOrThrow(getState());
+    const headers = getAuthHeaderOrThrow(getState());
     return pagedFetchAll(
       (page, limit) =>
         client
           .get('/systems/{systemSymbol}/waypoints', {
-            headers: { Authorization: `Bearer ${token}` },
+            headers,
             params: { path: { systemSymbol }, query: { page, limit } },
           })
           .then(unwrapDataOrThrow)

@@ -4,7 +4,7 @@ import { external } from '@/schema';
 
 import { client, unwrapDataOrThrow } from '../client';
 import { pagedFetchAll } from '../pagedFetchAll';
-import { getAuthTokenOrThrow, getIsAuthTokenReady } from '../selectors';
+import { getAuthHeaderOrThrow, getIsAuthTokenReady } from '../selectors';
 import { createAppAsyncThunk } from '../storeUtils';
 
 type Ship = external['../models/Ship.json'];
@@ -16,14 +16,11 @@ export interface ShipsState {
 export const fetchAllShips = createAppAsyncThunk(
   'ships/fetchAllShips',
   async (_, { getState }) => {
-    const token = getAuthTokenOrThrow(getState());
+    const headers = getAuthHeaderOrThrow(getState());
     return pagedFetchAll(
       (page, limit) =>
         client
-          .get('/my/ships', {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { query: { page, limit } },
-          })
+          .get('/my/ships', { headers, params: { query: { page, limit } } })
           .then(unwrapDataOrThrow)
           .then((response) => ({ data: response.data, total: response.meta.total })),
       20
