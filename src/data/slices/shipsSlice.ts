@@ -1,7 +1,8 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, isAnyOf } from '@reduxjs/toolkit';
 
 import { external } from '@/schema';
 
+import { scanShips, scanSystems, scanWaypoints } from '../actions';
 import { client, unwrapDataOrThrow } from '../client';
 import { pagedFetchAll } from '../pagedFetchAll';
 import { getAuthHeaderOrThrow, getIsAuthTokenReady } from '../selectors';
@@ -11,6 +12,7 @@ type Ship = external['../models/Ship.json'];
 
 export interface ShipsState {
   ships: { [shipSymbol: string]: Ship };
+  cooldowns: { [shipSymbol: string]: { total: number; expiration: Date } };
 }
 
 export const fetchAllShips = createAppAsyncThunk(
@@ -29,19 +31,57 @@ export const fetchAllShips = createAppAsyncThunk(
   { condition: (_, { getState }) => getIsAuthTokenReady(getState()) }
 );
 
-const initialState: ShipsState = { ships: {} };
+export const fetchShipCooldown = createAppAsyncThunk(
+  'ships/fetchShipCooldown',
+  async (shipSymbol: string, { getState }) => {
+    const headers = getAuthHeaderOrThrow(getState());
+    return client
+      .get('/my/ships/{shipSymbol}/cooldown', {
+        headers,
+        params: { path: { shipSymbol } },
+      })
+      .then((response) => {
+        if (response.response.status === 204) {
+          return null;
+        }
+        return unwrapDataOrThrow(response);
+      });
+  },
+  { condition: (_, { getState }) => getIsAuthTokenReady(getState()) }
+);
+
+const initialState: ShipsState = { ships: {}, cooldowns: {} };
 
 const shipsSlice = createSlice({
   name: 'ships',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(fetchAllShips.fulfilled, (state, action) => {
-      const ships = action.payload.data;
-      for (const ship of ships) {
-        state.ships[ship.symbol] = ship;
-      }
-    });
+    builder
+      .addCase(fetchAllShips.fulfilled, (state, action) => {
+        const ships = action.payload.data;
+        for (const ship of ships) {
+          state.ships[ship.symbol] = ship;
+        }
+      })
+      .addCase(fetchShipCooldown.fulfilled, (state, action) => {
+        const shipSymbol = action.meta.arg;
+        if (action.payload === null) {
+          if (Object.prototype.hasOwnProperty.call(state.cooldowns, shipSymbol)) {
+            delete state.cooldowns[shipSymbol];
+          }
+        } else {
+          const { totalSeconds, expiration } = action.payload.data;
+          state.cooldowns[shipSymbol] = { total: totalSeconds, expiration: new Date(expiration) };
+        }
+      })
+      .addMatcher(
+        isAnyOf(scanSystems.fulfilled, scanWaypoints.fulfilled, scanShips.fulfilled),
+        (state, action) => {
+          const { shipSymbol, totalSeconds, expiration } = action.payload.data.cooldown;
+          state.cooldowns[shipSymbol] = { total: totalSeconds, expiration: new Date(expiration) };
+        }
+      );
   },
 });
 
