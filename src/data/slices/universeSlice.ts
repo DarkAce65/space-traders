@@ -2,7 +2,7 @@ import { createSlice, isAnyOf } from '@reduxjs/toolkit';
 
 import { external } from '@/schema';
 
-import pick from './pick';
+import pick from '../../utils/pick';
 import { scanSystems, scanWaypoints } from '../actions';
 import { client, unwrapDataOrThrow } from '../client';
 import { pagedFetchAll } from '../pagedFetchAll';
