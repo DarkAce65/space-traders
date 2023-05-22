@@ -4,7 +4,7 @@ import { external } from '@/schema';
 
 import { registerAgent } from '../actions';
 import { client, unwrapDataOrThrow } from '../client';
-import { getAuthHeaderOrThrow, getIsAuthTokenReady } from '../selectors';
+import { getAuthHeaderOrThrow } from '../selectors';
 import { createAppAsyncThunk } from '../storeUtils';
 
 export interface AgentState {
@@ -14,15 +14,11 @@ export interface AgentState {
   credits: number;
 }
 
-export const fetchAgent = createAppAsyncThunk(
-  'agent/fetch',
-  async (_, { getState }) => {
-    const headers = getAuthHeaderOrThrow(getState());
-    const response = await client.get('/my/agent', { headers });
-    return unwrapDataOrThrow(response);
-  },
-  { condition: (_, { getState }) => getIsAuthTokenReady(getState()) }
-);
+export const fetchAgent = createAppAsyncThunk('agent/fetch', async (_, { getState }) => {
+  const headers = getAuthHeaderOrThrow(getState());
+  const response = await client.get('/my/agent', { headers });
+  return unwrapDataOrThrow(response);
+});
 
 const initialState: AgentState = {
   accountId: '',

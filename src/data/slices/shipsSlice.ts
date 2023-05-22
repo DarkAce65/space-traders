@@ -5,7 +5,7 @@ import { external } from '@/schema';
 import { scanShips, scanSystems, scanWaypoints } from '../actions';
 import { client, unwrapDataOrThrow } from '../client';
 import { pagedFetchAll } from '../pagedFetchAll';
-import { getAuthHeaderOrThrow, getIsAuthTokenReady } from '../selectors';
+import { getAuthHeaderOrThrow } from '../selectors';
 import { createAppAsyncThunk } from '../storeUtils';
 
 type Ship = external['../models/Ship.json'];
@@ -15,39 +15,31 @@ export interface ShipsState {
   cooldowns: { [shipSymbol: string]: { total: number; expiration: Date } };
 }
 
-export const fetchAllShips = createAppAsyncThunk(
-  'ships/fetchAllShips',
-  async (_, { getState }) => {
-    const headers = getAuthHeaderOrThrow(getState());
-    return pagedFetchAll(
-      (page, limit) =>
-        client
-          .get('/my/ships', { headers, params: { query: { page, limit } } })
-          .then(unwrapDataOrThrow)
-          .then((response) => ({ data: response.data, total: response.meta.total })),
-      20
-    );
-  },
-  { condition: (_, { getState }) => getIsAuthTokenReady(getState()) }
-);
+export const fetchAllShips = createAppAsyncThunk('ships/fetchAllShips', async (_, { getState }) => {
+  const headers = getAuthHeaderOrThrow(getState());
+  return pagedFetchAll(
+    (page, limit) =>
+      client
+        .get('/my/ships', { headers, params: { query: { page, limit } } })
+        .then(unwrapDataOrThrow)
+        .then((response) => ({ data: response.data, total: response.meta.total })),
+    20
+  );
+});
 
 export const fetchShipCooldown = createAppAsyncThunk(
   'ships/fetchShipCooldown',
   async (shipSymbol: string, { getState }) => {
     const headers = getAuthHeaderOrThrow(getState());
     return client
-      .get('/my/ships/{shipSymbol}/cooldown', {
-        headers,
-        params: { path: { shipSymbol } },
-      })
+      .get('/my/ships/{shipSymbol}/cooldown', { headers, params: { path: { shipSymbol } } })
       .then((response) => {
         if (response.response.status === 204) {
           return null;
         }
         return unwrapDataOrThrow(response);
       });
-  },
-  { condition: (_, { getState }) => getIsAuthTokenReady(getState()) }
+  }
 );
 
 const initialState: ShipsState = { ships: {}, cooldowns: {} };

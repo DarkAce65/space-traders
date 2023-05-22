@@ -9,5 +9,3 @@ export const getAuthHeaderOrThrow = (state: RootState): HeadersInit => {
   }
   return { Authorization: `Bearer ${token}` };
 };
-
-export const getIsAuthTokenReady = (state: RootState): boolean => state.auth.token !== null;

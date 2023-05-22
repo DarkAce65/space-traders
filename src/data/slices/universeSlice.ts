@@ -6,7 +6,7 @@ import pick from '../../utils/pick';
 import { scanSystems, scanWaypoints } from '../actions';
 import { client, unwrapDataOrThrow } from '../client';
 import { pagedFetchAll } from '../pagedFetchAll';
-import { getAuthHeaderOrThrow, getIsAuthTokenReady } from '../selectors';
+import { getAuthHeaderOrThrow } from '../selectors';
 import { RootState } from '../store';
 import { createAppAsyncThunk } from '../storeUtils';
 
@@ -44,12 +44,10 @@ export const fetchSystem = createAppAsyncThunk(
   },
   {
     condition: (systemSymbol, { getState }) => {
-      const state = getState();
-      const systems = getSystems(state);
+      const systems = getSystems(getState());
       return (
-        getIsAuthTokenReady(state) &&
-        (!Object.prototype.hasOwnProperty.call(systems, systemSymbol) ||
-          !systems[systemSymbol].isHydrated)
+        !Object.prototype.hasOwnProperty.call(systems, systemSymbol) ||
+        !systems[systemSymbol].isHydrated
       );
     },
   }
@@ -70,12 +68,10 @@ export const fetchWaypoint = createAppAsyncThunk(
   },
   {
     condition: ({ waypointSymbol }, { getState }) => {
-      const state = getState();
-      const waypoints = getWaypoints(state);
+      const waypoints = getWaypoints(getState());
       return (
-        getIsAuthTokenReady(state) &&
-        (!Object.prototype.hasOwnProperty.call(waypoints, waypointSymbol) ||
-          !waypoints[waypointSymbol].isHydrated)
+        !Object.prototype.hasOwnProperty.call(waypoints, waypointSymbol) ||
+        !waypoints[waypointSymbol].isHydrated
       );
     },
   }
@@ -96,8 +92,7 @@ export const fetchSystemWaypoints = createAppAsyncThunk(
           .then((response) => ({ data: response.data, total: response.meta.total })),
       20
     );
-  },
-  { condition: (_, { getState }) => getIsAuthTokenReady(getState()) }
+  }
 );
 
 const initialState: UniverseState = { systems: {}, waypoints: {} };
