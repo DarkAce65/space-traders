@@ -2,6 +2,7 @@ import { createSlice, isAnyOf } from '@reduxjs/toolkit';
 
 import { external } from '@/schema';
 
+import pick from './pick';
 import { scanSystems, scanWaypoints } from '../actions';
 import { client, unwrapDataOrThrow } from '../client';
 import { pagedFetchAll } from '../pagedFetchAll';
@@ -9,21 +10,21 @@ import { getAuthToken } from '../selectors';
 import { RootState } from '../store';
 import { createAppAsyncThunk } from '../storeUtils';
 
-type UnexploredSystem = external['../models/ScannedSystem.json'];
-type UnexploredWaypoint = external['../models/SystemWaypoint.json'];
 type System = external['../models/System.json'];
 type Waypoint = external['../models/Waypoint.json'];
+type DehydratedSystem = Pick<System, 'symbol' | 'sectorSymbol' | 'type' | 'x' | 'y'>;
+type DehydratedWaypoint = Pick<Waypoint, 'symbol' | 'systemSymbol' | 'type' | 'x' | 'y'>;
 
 export interface UniverseState {
   systems: {
     [systemSymbol: string]:
-      | { isExplored: true; data: System }
-      | { isExplored: false; data: UnexploredSystem };
+      | { isHydrated: true; data: System }
+      | { isHydrated: false; data: DehydratedSystem };
   };
   waypoints: {
     [waypointSymbol: string]:
-      | { isExplored: true; data: Waypoint }
-      | { isExplored: false; data: UnexploredWaypoint };
+      | { isHydrated: true; data: Waypoint }
+      | { isHydrated: false; data: DehydratedWaypoint };
   };
 }
 
@@ -95,7 +96,7 @@ export const fetchSystemWaypoints = createAppAsyncThunk(
       return (
         (getAuthToken(state) !== null &&
           !Object.prototype.hasOwnProperty.call(systemsBySymbol, systemSymbol)) ||
-        !systemsBySymbol[systemSymbol].isExplored
+        !systemsBySymbol[systemSymbol].isHydrated
       );
     },
   }
@@ -111,11 +112,14 @@ const universeSlice = createSlice({
     builder
       .addCase(fetchSystem.fulfilled, (state, action) => {
         const system = action.payload.data;
-        state.systems[system.symbol] = { isExplored: true, data: system };
+        state.systems[system.symbol] = { isHydrated: true, data: system };
 
         for (const waypoint of system.waypoints) {
           if (!Object.prototype.hasOwnProperty.call(state.waypoints, waypoint.symbol)) {
-            state.waypoints[waypoint.symbol] = { isExplored: false, data: waypoint };
+            state.waypoints[waypoint.symbol] = {
+              isHydrated: false,
+              data: { systemSymbol: system.symbol, ...waypoint },
+            };
           }
         }
       })
@@ -123,7 +127,10 @@ const universeSlice = createSlice({
         const scannedSystems = action.payload.data.systems;
         for (const system of scannedSystems) {
           if (!Object.prototype.hasOwnProperty.call(state.systems, system.symbol)) {
-            state.systems[system.symbol] = { isExplored: false, data: system };
+            state.systems[system.symbol] = {
+              isHydrated: false,
+              data: pick(system, ['symbol', 'sectorSymbol', 'type', 'x', 'y']),
+            };
           }
         }
       })
@@ -144,9 +151,9 @@ const universeSlice = createSlice({
           for (const waypoint of waypoints) {
             if (
               !Object.prototype.hasOwnProperty.call(state.waypoints, waypoint.symbol) ||
-              !state.waypoints[waypoint.symbol].isExplored
+              !state.waypoints[waypoint.symbol].isHydrated
             ) {
-              state.waypoints[waypoint.symbol] = { isExplored: true, data: waypoint };
+              state.waypoints[waypoint.symbol] = { isHydrated: true, data: waypoint };
             }
           }
         }
