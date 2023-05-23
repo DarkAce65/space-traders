@@ -1,7 +1,16 @@
 import { createSlice, isAnyOf } from '@reduxjs/toolkit';
 
-import { external } from '@/schema';
-
+import {
+  DehydratedSystem,
+  DehydratedWaypoint,
+  System,
+  Waypoint,
+  isHydratedSystem,
+  isHydratedWaypoint,
+  mapSystemFromResponse,
+  mapWaypointFromResponse,
+} from '../../types';
+import assertUnreachable from '../../utils/assertUnreachable';
 import pick from '../../utils/pick';
 import { scanSystems, scanWaypoints } from '../actions';
 import { client, unwrapDataOrThrow } from '../client';
@@ -9,11 +18,6 @@ import { pagedFetchAll } from '../pagedFetchAll';
 import { getAuthHeaderOrThrow } from '../selectors';
 import { RootState } from '../store';
 import { createAppAsyncThunk } from '../storeUtils';
-
-type System = external['../models/System.json'];
-type Waypoint = external['../models/Waypoint.json'];
-type DehydratedSystem = Pick<System, 'symbol' | 'sectorSymbol' | 'type' | 'x' | 'y'>;
-type DehydratedWaypoint = Pick<Waypoint, 'symbol' | 'systemSymbol' | 'type' | 'x' | 'y'>;
 
 export interface UniverseState {
   systems: {
@@ -105,7 +109,7 @@ const universeSlice = createSlice({
     builder
       .addCase(fetchSystem.fulfilled, (state, action) => {
         const system = action.payload.data;
-        state.systems[system.symbol] = { isHydrated: true, data: system };
+        state.systems[system.symbol] = { isHydrated: true, data: mapSystemFromResponse(system) };
 
         for (const waypoint of system.waypoints) {
           if (!Object.prototype.hasOwnProperty.call(state.waypoints, waypoint.symbol)) {
@@ -132,11 +136,13 @@ const universeSlice = createSlice({
         (state, action) => {
           let waypoints: Waypoint[];
           if (fetchWaypoint.fulfilled.match(action)) {
-            waypoints = [action.payload.data];
+            waypoints = [mapWaypointFromResponse(action.payload.data)];
           } else if (fetchSystemWaypoints.fulfilled.match(action)) {
-            waypoints = action.payload.data;
+            waypoints = action.payload.data.map((waypoint) => mapWaypointFromResponse(waypoint));
           } else if (scanWaypoints.fulfilled.match(action)) {
-            waypoints = action.payload.data.waypoints;
+            waypoints = action.payload.data.waypoints.map((waypoint) =>
+              mapWaypointFromResponse(waypoint)
+            );
           } else {
             throw assertUnreachable(action);
           }
