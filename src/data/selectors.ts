@@ -9,3 +9,6 @@ export const getAuthHeaderOrThrow = (state: RootState): HeadersInit => {
   }
   return { Authorization: `Bearer ${token}` };
 };
+
+export const getShouldLoadLocalData = (state: RootState) =>
+  state.localData.localDataStatus === 'UNLOADED';

@@ -1,7 +1,13 @@
 import { paths } from '@/schema';
 
 import { client, unwrapDataOrThrow } from './client';
+import { readSystemsAndWaypoints } from './localDb';
+import { getShouldLoadLocalData } from './selectors';
 import { createAppAsyncThunk } from './storeUtils';
+
+export const loadLocalData = createAppAsyncThunk('loadLocalData', () => readSystemsAndWaypoints(), {
+  condition: (_, { getState }) => getShouldLoadLocalData(getState()),
+});
 
 type RegisterAgentBody = NonNullable<
   paths['/register']['post']['requestBody']

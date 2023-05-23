@@ -12,7 +12,7 @@ import {
 } from '../../types';
 import assertUnreachable from '../../utils/assertUnreachable';
 import pick from '../../utils/pick';
-import { scanSystems, scanWaypoints } from '../actions';
+import { loadLocalData, scanSystems, scanWaypoints } from '../actions';
 import { client, unwrapDataOrThrow } from '../client';
 import { pagedFetchAll } from '../pagedFetchAll';
 import { getAuthHeaderOrThrow } from '../selectors';
@@ -32,9 +32,9 @@ export interface UniverseState {
   };
 }
 
-const getSystems = (state: RootState) => state.universe.systems;
+export const getSystems = (state: RootState) => state.universe.systems;
 
-const getWaypoints = (state: RootState) => state.universe.waypoints;
+export const getWaypoints = (state: RootState) => state.universe.waypoints;
 
 export const fetchSystem = createAppAsyncThunk(
   'universe/fetchSystem',
@@ -107,6 +107,23 @@ const universeSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+      .addCase(loadLocalData.fulfilled, (state, action) => {
+        const { systems, waypoints } = action.payload;
+        for (const system of systems) {
+          if (isHydratedSystem(system)) {
+            state.systems[system.symbol] = { isHydrated: true, data: system };
+          } else {
+            state.systems[system.symbol] = { isHydrated: false, data: system };
+          }
+        }
+        for (const waypoint of waypoints) {
+          if (isHydratedWaypoint(waypoint)) {
+            state.waypoints[waypoint.symbol] = { isHydrated: true, data: waypoint };
+          } else {
+            state.waypoints[waypoint.symbol] = { isHydrated: false, data: waypoint };
+          }
+        }
+      })
       .addCase(fetchSystem.fulfilled, (state, action) => {
         const system = action.payload.data;
         state.systems[system.symbol] = { isHydrated: true, data: mapSystemFromResponse(system) };
