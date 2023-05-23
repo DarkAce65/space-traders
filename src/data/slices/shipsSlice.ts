@@ -47,6 +47,41 @@ export const fetchShipCooldown = createAppAsyncThunk(
   }
 );
 
+export const dockShip = createAppAsyncThunk(
+  'ships/dockShip',
+  async (shipSymbol: string, { getState }) => {
+    const headers = getAuthHeaderOrThrow(getState());
+    return client
+      .post('/my/ships/{shipSymbol}/dock', { headers, params: { path: { shipSymbol } } })
+      .then(unwrapDataOrThrow);
+  }
+);
+
+export const orbitShip = createAppAsyncThunk(
+  'ships/orbitShip',
+  async (shipSymbol: string, { getState }) => {
+    const headers = getAuthHeaderOrThrow(getState());
+    return client
+      .post('/my/ships/{shipSymbol}/orbit', { headers, params: { path: { shipSymbol } } })
+      .then(unwrapDataOrThrow);
+  }
+);
+
+type NavigateShipArgs = { shipSymbol: string; waypointSymbol: string };
+export const navigateShip = createAppAsyncThunk(
+  'ships/navigateShip',
+  async ({ shipSymbol, waypointSymbol }: NavigateShipArgs, { getState }) => {
+    const headers = getAuthHeaderOrThrow(getState());
+    return client
+      .post('/my/ships/{shipSymbol}/navigate', {
+        headers,
+        params: { path: { shipSymbol } },
+        body: { waypointSymbol },
+      })
+      .then(unwrapDataOrThrow);
+  }
+);
+
 const initialState: ShipsState = { ships: {}, cooldowns: {} };
 
 const shipsSlice = createSlice({
@@ -74,6 +109,17 @@ const shipsSlice = createSlice({
             expirationTimestamp: new Date(expiration).getTime(),
           };
         }
+      })
+      .addCase(navigateShip.fulfilled, (state, action) => {
+        const { shipSymbol } = action.meta.arg;
+        const { fuel, nav } = action.payload.data;
+        state.ships[shipSymbol].fuel = fuel;
+        state.ships[shipSymbol].nav = nav;
+      })
+      .addMatcher(isAnyOf(dockShip.fulfilled, orbitShip.fulfilled), (state, action) => {
+        const shipSymbol = action.meta.arg;
+        const { nav } = action.payload.data;
+        state.ships[shipSymbol].nav = nav;
       })
       .addMatcher(
         isAnyOf(scanSystems.fulfilled, scanWaypoints.fulfilled, scanShips.fulfilled),
