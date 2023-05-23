@@ -2,7 +2,7 @@ import { paths } from '@/schema';
 
 import { client, unwrapDataOrThrow } from './client';
 import { readSystemsAndWaypoints } from './localDb';
-import { getShouldLoadLocalData } from './selectors';
+import { getAuthHeaderOrThrow, getShouldLoadLocalData } from './selectors';
 import { createAppAsyncThunk } from './storeUtils';
 
 export const loadLocalData = createAppAsyncThunk('loadLocalData', () => readSystemsAndWaypoints(), {
@@ -25,20 +25,32 @@ export const registerAgent = createAppAsyncThunk(
       .then(unwrapDataOrThrow)
 );
 
-export const scanSystems = createAppAsyncThunk('ships/scanSystems', (shipSymbol: string) =>
-  client
-    .post('/my/ships/{shipSymbol}/scan/systems', { params: { path: { shipSymbol } } })
-    .then(unwrapDataOrThrow)
+export const scanSystems = createAppAsyncThunk(
+  'ships/scanSystems',
+  (shipSymbol: string, { getState }) => {
+    const headers = getAuthHeaderOrThrow(getState());
+    return client
+      .post('/my/ships/{shipSymbol}/scan/systems', { headers, params: { path: { shipSymbol } } })
+      .then(unwrapDataOrThrow);
+  }
 );
 
-export const scanWaypoints = createAppAsyncThunk('ships/scanWaypoints', (shipSymbol: string) =>
-  client
-    .post('/my/ships/{shipSymbol}/scan/waypoints', { params: { path: { shipSymbol } } })
-    .then(unwrapDataOrThrow)
+export const scanWaypoints = createAppAsyncThunk(
+  'ships/scanWaypoints',
+  (shipSymbol: string, { getState }) => {
+    const headers = getAuthHeaderOrThrow(getState());
+    return client
+      .post('/my/ships/{shipSymbol}/scan/waypoints', { headers, params: { path: { shipSymbol } } })
+      .then(unwrapDataOrThrow);
+  }
 );
 
-export const scanShips = createAppAsyncThunk('ships/scanShips', (shipSymbol: string) =>
-  client
-    .post('/my/ships/{shipSymbol}/scan/ships', { params: { path: { shipSymbol } } })
-    .then(unwrapDataOrThrow)
+export const scanShips = createAppAsyncThunk(
+  'ships/scanShips',
+  (shipSymbol: string, { getState }) => {
+    const headers = getAuthHeaderOrThrow(getState());
+    return client
+      .post('/my/ships/{shipSymbol}/scan/ships', { headers, params: { path: { shipSymbol } } })
+      .then(unwrapDataOrThrow);
+  }
 );
