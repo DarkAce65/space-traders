@@ -12,7 +12,12 @@ type Ship = external['../models/Ship.json'];
 
 export interface ShipsState {
   ships: { [shipSymbol: string]: Ship };
-  cooldowns: { [shipSymbol: string]: { total: number; expiration: Date } };
+  cooldowns: {
+    [shipSymbol: string]: {
+      total: number;
+      expirationTimestamp: number;
+    };
+  };
 }
 
 export const fetchAllShips = createAppAsyncThunk('ships/fetchAllShips', async (_, { getState }) => {
@@ -58,20 +63,26 @@ const shipsSlice = createSlice({
       })
       .addCase(fetchShipCooldown.fulfilled, (state, action) => {
         const shipSymbol = action.meta.arg;
-        if (action.payload === null) {
+        if (action.payload === null || !action.payload.data.expiration) {
           if (Object.prototype.hasOwnProperty.call(state.cooldowns, shipSymbol)) {
             delete state.cooldowns[shipSymbol];
           }
         } else {
           const { totalSeconds, expiration } = action.payload.data;
-          state.cooldowns[shipSymbol] = { total: totalSeconds, expiration: new Date(expiration) };
+          state.cooldowns[shipSymbol] = {
+            total: totalSeconds,
+            expirationTimestamp: new Date(expiration).getTime(),
+          };
         }
       })
       .addMatcher(
         isAnyOf(scanSystems.fulfilled, scanWaypoints.fulfilled, scanShips.fulfilled),
         (state, action) => {
           const { shipSymbol, totalSeconds, expiration } = action.payload.data.cooldown;
-          state.cooldowns[shipSymbol] = { total: totalSeconds, expiration: new Date(expiration) };
+          state.cooldowns[shipSymbol] = {
+            total: totalSeconds,
+            expirationTimestamp: new Date(expiration!).getTime(),
+          };
         }
       );
   },
