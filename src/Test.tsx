@@ -146,6 +146,10 @@ const Test = () => {
         <div key={ship.symbol}>
           {ship.symbol} ({ship.registration.role}) - Fuel: {ship.fuel.current} /{' '}
           {ship.fuel.capacity}
+          <br />
+          <span style={{ marginLeft: 20 }}>
+            {ship.nav.status} ({ship.nav.flightMode})
+          </span>
         </div>
       ))}
     </Dark>
