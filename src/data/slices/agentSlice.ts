@@ -2,6 +2,7 @@ import { createSlice, isAnyOf } from '@reduxjs/toolkit';
 
 import { external } from '@/schema';
 
+import assertUnreachable from '../../utils/assertUnreachable';
 import { registerAgent } from '../actions';
 import { client, unwrapDataOrThrow } from '../client';
 import { getAuthHeaderOrThrow } from '../selectors';
@@ -39,7 +40,7 @@ const agentSlice = createSlice({
       } else if (fetchAgent.fulfilled.match(action)) {
         agent = action.payload.data;
       } else {
-        throw new Error('Unexpected action handled');
+        throw assertUnreachable(action);
       }
 
       const { accountId, symbol, headquarters, credits } = agent;

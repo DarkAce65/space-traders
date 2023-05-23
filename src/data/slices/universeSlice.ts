@@ -138,7 +138,7 @@ const universeSlice = createSlice({
           } else if (scanWaypoints.fulfilled.match(action)) {
             waypoints = action.payload.data.waypoints;
           } else {
-            throw new Error('Unexpected action handled');
+            throw assertUnreachable(action);
           }
 
           for (const waypoint of waypoints) {
