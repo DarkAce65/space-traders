@@ -4,18 +4,17 @@ import { fileURLToPath } from 'node:url';
 
 import openapiTS from 'openapi-typescript';
 
-const dirname = path.dirname(fileURLToPath(import.meta.url));
-
+const DIRNAME = path.dirname(fileURLToPath(import.meta.url));
 const API_SPEC_PATH = path.join(
-  dirname,
+  DIRNAME,
   '../space-traders-api-docs',
   'reference/SpaceTraders.json'
 );
 
 const output = await openapiTS(new URL(API_SPEC_PATH, import.meta.url));
 
-const output_dir = path.join(dirname, '../generated-schema');
-if (!existsSync(output_dir)) {
-  mkdirSync(output_dir, { recursive: true });
+const outputDir = path.join(DIRNAME, '../generated-schema');
+if (!existsSync(outputDir)) {
+  mkdirSync(outputDir, { recursive: true });
 }
-writeFileSync(new URL(path.join(output_dir, 'schema.ts'), import.meta.url), output);
+writeFileSync(new URL(path.join(outputDir, 'schema.ts'), import.meta.url), output);
