@@ -1,13 +1,13 @@
 import { Provider } from 'react-redux';
 
-import Test from './Test';
+import Container from './Container';
 import { createStore } from './data/store';
 
 const store = createStore();
 
 const App = () => (
   <Provider store={store}>
-    <Test />
+    <Container />
   </Provider>
 );
 

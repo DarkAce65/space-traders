@@ -12,7 +12,7 @@ export const loadLocalData = createAppAsyncThunk('loadLocalData', () => readSyst
 type RegisterAgentBody = NonNullable<
   paths['/register']['post']['requestBody']
 >['content']['application/json'];
-type RegisterAgentArgs = {
+export type RegisterAgentArgs = {
   agentName: RegisterAgentBody['symbol'];
   faction: RegisterAgentBody['faction'];
   email?: RegisterAgentBody['email'];

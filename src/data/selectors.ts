@@ -1,6 +1,6 @@
 import { RootState } from './store';
 
-const getAuthToken = (state: RootState) => state.auth.token;
+export const getAuthToken = (state: RootState) => state.auth.token;
 
 export const getAuthHeaderOrThrow = (state: RootState): HeadersInit => {
   const token = getAuthToken(state);
