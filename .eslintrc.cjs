@@ -55,6 +55,7 @@ module.exports = {
     'prefer-const': 'warn',
     'prefer-template': 'warn',
     'prettier/prettier': ['warn', prettierConfig],
+    'react-hooks/exhaustive-deps': 'error',
     'react-refresh/only-export-components': 'warn',
     'sort-imports': ['warn', { ignoreDeclarationSort: true }],
     'spaced-comment': ['warn', 'always', { markers: ['/'] }],
