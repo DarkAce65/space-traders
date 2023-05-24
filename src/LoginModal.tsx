@@ -20,7 +20,6 @@ const LoadTokenForm = () => {
         <input
           type="text"
           value={token}
-          pattern="^([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]*)$"
           className="input-bordered input w-full"
           onChange={({ target: { value } }) => {
             setToken(value);
@@ -90,7 +89,11 @@ const RegisterAgentForm = () => {
         </select>
       </div>
       <div className="form-control">
-        <label className="label">Email</label>
+        <label className="label">
+          <span>
+            Email <span className="text-sm">(Optional, used to recover agent after reset)</span>
+          </span>
+        </label>
         <input
           type="text"
           value={email}
@@ -120,7 +123,7 @@ const LoginModal = () => {
 
   return (
     <div className="modal modal-open">
-      <div className="modal-box mt-24" style={{ alignSelf: 'start' }}>
+      <div className="modal-box mt-24 max-w-3xl" style={{ alignSelf: 'start' }}>
         <h1 className="mb-6 text-center text-4xl">Space Traders</h1>
         <div className="tabs mb-6 w-full">
           <button
