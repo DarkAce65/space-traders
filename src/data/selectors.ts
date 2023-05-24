@@ -11,4 +11,5 @@ export const getAuthHeaderOrThrow = (state: RootState): HeadersInit => {
 };
 
 export const getShouldLoadLocalData = (state: RootState) =>
-  state.localData.localDataStatus === 'UNLOADED';
+  state.localData.localDataStatus === 'UNINITIALIZED' ||
+  state.localData.localDataStatus === 'FAILED';

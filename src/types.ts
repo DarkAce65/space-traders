@@ -1,6 +1,6 @@
 import { external } from '@/schema';
 
-export type LoadStatus = 'UNLOADED' | 'LOADING' | 'LOADED';
+export type LoadStatus = 'UNINITIALIZED' | 'PENDING' | 'SUCCEEDED' | 'FAILED';
 
 export type DehydratedSystem = Pick<
   external['../models/System.json'],
