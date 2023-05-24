@@ -118,11 +118,11 @@ const RegisterAgentForm = () => {
   );
 };
 
-const LoginModal = () => {
+const LoginModal = ({ open }: { open: boolean }) => {
   const [tab, setTab] = useState<'load' | 'register'>('load');
 
   return (
-    <div className="modal modal-open">
+    <div className={clsx('modal', { 'modal-open': open })}>
       <div className="modal-box mt-24 max-w-3xl" style={{ alignSelf: 'start' }}>
         <h1 className="mb-6 text-center text-4xl">Space Traders</h1>
         <div className="tabs mb-6 w-full">

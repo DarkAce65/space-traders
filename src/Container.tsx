@@ -6,11 +6,12 @@ import { useAppSelector } from './data/storeUtils';
 const Container = () => {
   const token = useAppSelector(getAuthToken);
 
-  if (!token) {
-    return <LoginModal />;
-  }
-
-  return <Home />;
+  return (
+    <>
+      <LoginModal open={!token} />
+      <Home />
+    </>
+  );
 };
 
 export default Container;
