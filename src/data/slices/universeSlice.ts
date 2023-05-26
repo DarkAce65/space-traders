@@ -1,15 +1,8 @@
 import { createSlice, isAnyOf } from '@reduxjs/toolkit';
 
-import {
-  DehydratedSystem,
-  DehydratedWaypoint,
-  System,
-  Waypoint,
-  isHydratedSystem,
-  isHydratedWaypoint,
-  mapSystemFromResponse,
-  mapWaypointFromResponse,
-} from '../../types';
+import { external } from '@/schema';
+
+import { DehydratedSystem, DehydratedWaypoint, System, Waypoint } from '../../types';
 import assertUnreachable from '../../utils/assertUnreachable';
 import pick from '../../utils/pick';
 import { loadLocalData, scanSystems, scanWaypoints } from '../actions';
@@ -18,6 +11,25 @@ import { pagedFetchAll } from '../pagedFetchAll';
 import { getAuthHeaderOrThrow } from '../selectors';
 import { RootState } from '../store';
 import { createAppAsyncThunk } from '../storeUtils';
+
+const isHydratedSystem = (system: System | DehydratedSystem): system is System =>
+  'waypoints' in system && 'factions' in system;
+
+const isHydratedWaypoint = (waypoint: Waypoint | DehydratedWaypoint): waypoint is Waypoint =>
+  'orbitals' in waypoint && 'faction' in waypoint && 'traits' in waypoint && 'chart' in waypoint;
+
+const mapSystemFromResponse = (system: external['../models/System.json']): System => ({
+  ...system,
+  waypoints: system.waypoints.map((waypoint) => waypoint.symbol),
+  factions: system.factions.map((faction) => faction.symbol),
+});
+
+const mapWaypointFromResponse = (waypoint: external['../models/Waypoint.json']): Waypoint => ({
+  ...waypoint,
+  orbitals: waypoint.orbitals.map((orbital) => orbital.symbol),
+  faction: waypoint.faction ? waypoint.faction.symbol : null,
+  chart: waypoint.chart || null,
+});
 
 export interface UniverseState {
   systems: {
