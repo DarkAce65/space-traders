@@ -43,6 +43,7 @@ module.exports = {
         ],
         pathGroupsExcludedImportTypes: ['builtin'],
         alphabetize: { order: 'asc', caseInsensitive: false },
+        warnOnUnassignedImports: true,
       },
     ],
     'no-console': 'off',
