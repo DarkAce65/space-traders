@@ -2,7 +2,7 @@ import { createSlice, isAnyOf } from '@reduxjs/toolkit';
 
 import { external } from '@/schema';
 
-import { LoadStatus } from '../../types';
+import { Agent, LoadStatus } from '../../types';
 import assertUnreachable from '../../utils/assertUnreachable';
 import { registerAgent } from '../actions';
 import { client, unwrapDataOrThrow } from '../client';
@@ -13,12 +13,7 @@ import { createAppAsyncThunk } from '../storeUtils';
 export interface AgentState {
   registerAgentStatus: LoadStatus;
   status: LoadStatus;
-  data: {
-    accountId: string;
-    agentName: string;
-    headquarters: string;
-    credits: number;
-  } | null;
+  data: Agent | null;
 }
 
 export const getAgentFetchStatus = (state: RootState) => state.agent.status;
