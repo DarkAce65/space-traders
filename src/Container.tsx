@@ -9,7 +9,7 @@ const Container = () => {
   return (
     <>
       <LoginModal open={!token} />
-      <Home />
+      {token && <Home />}
     </>
   );
 };
