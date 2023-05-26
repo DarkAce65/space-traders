@@ -15,13 +15,13 @@ const authSlice = createSlice({
   reducers: {
     loadToken(state, action: PayloadAction<string>) {
       state.token = action.payload;
-      Cookies.set('agentToken', action.payload, { sameSite: 'strict' });
+      Cookies.set('agentToken', action.payload, { sameSite: 'strict', expires: 7 });
     },
   },
   extraReducers: (builder) => {
     builder.addCase(registerAgent.fulfilled, (state, action) => {
       state.token = action.payload.data.token;
-      Cookies.set('agentToken', action.payload.data.token, { sameSite: 'strict' });
+      Cookies.set('agentToken', action.payload.data.token, { sameSite: 'strict', expires: 7 });
     });
   },
 });
