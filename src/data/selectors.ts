@@ -10,8 +10,6 @@ export const getAuthHeaderOrThrow = (state: RootState): HeadersInit => {
   return { Authorization: `Bearer ${token}` };
 };
 
-export const getRegisterAgentFetchStatus = (state: RootState) => state.agent.registerAgentStatus;
-
 export const getShouldLoadLocalData = (state: RootState) =>
   state.localData.localDataStatus === 'UNINITIALIZED' ||
   state.localData.localDataStatus === 'FAILED';

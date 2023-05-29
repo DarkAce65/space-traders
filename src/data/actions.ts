@@ -2,11 +2,7 @@ import { paths } from '@/schema';
 
 import { client, unwrapDataOrThrow } from './client';
 import { readSystemsAndWaypoints } from './localDb';
-import {
-  getAuthHeaderOrThrow,
-  getRegisterAgentFetchStatus,
-  getShouldLoadLocalData,
-} from './selectors';
+import { getAuthHeaderOrThrow, getShouldLoadLocalData } from './selectors';
 import { createAppAsyncThunk } from './storeUtils';
 
 export const loadLocalData = createAppAsyncThunk('loadLocalData', () => readSystemsAndWaypoints(), {
@@ -28,10 +24,7 @@ export const registerAgent = createAppAsyncThunk(
       .post('/register', { body: { symbol: agentName, faction, email } })
       .then(unwrapDataOrThrow),
   {
-    condition: (_, { getState }) => {
-      const fetchStatus = getRegisterAgentFetchStatus(getState());
-      return fetchStatus === 'UNINITIALIZED' || fetchStatus === 'FAILED';
-    },
+    condition: (_, { getState }) => getState().auth.isRegistering,
   }
 );
 

@@ -11,7 +11,6 @@ import { RootState } from '../store';
 import { createAppAsyncThunk } from '../storeUtils';
 
 export interface AgentState {
-  registerAgentStatus: LoadStatus;
   status: LoadStatus;
   data: Agent | null;
 }
@@ -36,7 +35,6 @@ export const fetchAgent = createAppAsyncThunk(
 );
 
 const initialState: AgentState = {
-  registerAgentStatus: 'UNINITIALIZED',
   status: 'UNINITIALIZED',
   data: null,
 };
@@ -48,17 +46,13 @@ const agentSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      .addMatcher(isAnyOf(registerAgent.pending, fetchAgent.pending), (state, action) => {
-        if (registerAgent.fulfilled.match(action)) {
-          state.registerAgentStatus = 'PENDING';
-        }
+      .addMatcher(isAnyOf(registerAgent.pending, fetchAgent.pending), (state) => {
         state.status = 'PENDING';
       })
       .addMatcher(isAnyOf(registerAgent.fulfilled, fetchAgent.fulfilled), (state, action) => {
         let agent: external['../models/Agent.json'];
         if (registerAgent.fulfilled.match(action)) {
           agent = action.payload.data.agent;
-          state.registerAgentStatus = 'SUCCEEDED';
         } else if (fetchAgent.fulfilled.match(action)) {
           agent = action.payload.data;
         } else {
@@ -73,10 +67,7 @@ const agentSlice = createSlice({
           credits: agent.credits,
         };
       })
-      .addMatcher(isAnyOf(registerAgent.rejected, fetchAgent.rejected), (state, action) => {
-        if (registerAgent.fulfilled.match(action)) {
-          state.registerAgentStatus = 'FAILED';
-        }
+      .addMatcher(isAnyOf(registerAgent.rejected, fetchAgent.rejected), (state) => {
         state.status = 'FAILED';
       });
   },
