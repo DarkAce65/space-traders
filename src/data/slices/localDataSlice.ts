@@ -2,10 +2,13 @@ import { createSlice } from '@reduxjs/toolkit';
 
 import { LoadStatus } from '../../types';
 import { loadLocalData } from '../actions';
+import { RootState } from '../store';
 
 interface LocalDataState {
   localDataStatus: LoadStatus;
 }
+
+export const getLocalDataStatus = (state: RootState) => state.localData.localDataStatus;
 
 const initialState: LocalDataState = { localDataStatus: 'UNINITIALIZED' };
 
