@@ -2,7 +2,14 @@ import { createSlice, isAnyOf } from '@reduxjs/toolkit';
 
 import { external } from '@/schema';
 
-import { DehydratedSystem, DehydratedWaypoint, System, Waypoint } from '../../types';
+import {
+  DehydratedSystem,
+  DehydratedWaypoint,
+  LoadStatus,
+  Subset,
+  System,
+  Waypoint,
+} from '../../types';
 import assertUnreachable from '../../utils/assertUnreachable';
 import pick from '../../utils/pick';
 import { loadLocalData, scanSystems, scanWaypoints } from '../actions';
@@ -12,10 +19,10 @@ import { getAuthHeaderOrThrow } from '../selectors';
 import { RootState } from '../store';
 import { createAppAsyncThunk } from '../storeUtils';
 
-const isHydratedSystem = (system: System | DehydratedSystem): system is System =>
+export const isHydratedSystem = (system: System | DehydratedSystem): system is System =>
   'waypoints' in system && 'factions' in system;
 
-const isHydratedWaypoint = (waypoint: Waypoint | DehydratedWaypoint): waypoint is Waypoint =>
+export const isHydratedWaypoint = (waypoint: Waypoint | DehydratedWaypoint): waypoint is Waypoint =>
   'orbitals' in waypoint && 'faction' in waypoint && 'traits' in waypoint && 'chart' in waypoint;
 
 const mapSystemFromResponse = (system: external['../models/System.json']): System => ({
@@ -32,11 +39,13 @@ const mapWaypointFromResponse = (waypoint: external['../models/Waypoint.json']):
 });
 
 export interface UniverseState {
+  systemStatuses: { [systemSymbol: string]: Subset<LoadStatus, 'PENDING' | 'FAILED'> };
   systems: {
     [systemSymbol: string]:
       | { isHydrated: true; data: System }
       | { isHydrated: false; data: DehydratedSystem };
   };
+  waypointStatuses: { [waypointSymbol: string]: Subset<LoadStatus, 'PENDING' | 'FAILED'> };
   waypoints: {
     [waypointSymbol: string]:
       | { isHydrated: true; data: Waypoint }
@@ -44,7 +53,15 @@ export interface UniverseState {
   };
 }
 
+const isSystemBeingFetched = (state: RootState, systemSymbol: string) =>
+  state.universe.systemStatuses[systemSymbol] &&
+  state.universe.systemStatuses[systemSymbol] === 'PENDING';
+
 export const getSystems = (state: RootState) => state.universe.systems;
+
+const isWaypointBeingFetched = (state: RootState, waypointSymbol: string) =>
+  state.universe.waypointStatuses[waypointSymbol] &&
+  state.universe.waypointStatuses[waypointSymbol] === 'PENDING';
 
 export const getWaypoints = (state: RootState) => state.universe.waypoints;
 
@@ -60,10 +77,12 @@ export const fetchSystem = createAppAsyncThunk(
   },
   {
     condition: (systemSymbol, { getState }) => {
-      const systems = getSystems(getState());
+      const state = getState();
+      const systems = getSystems(state);
       return (
-        !Object.prototype.hasOwnProperty.call(systems, systemSymbol) ||
-        !systems[systemSymbol].isHydrated
+        !isSystemBeingFetched(state, systemSymbol) &&
+        (!Object.prototype.hasOwnProperty.call(systems, systemSymbol) ||
+          !systems[systemSymbol].isHydrated)
       );
     },
   }
@@ -84,9 +103,11 @@ export const fetchWaypoint = createAppAsyncThunk(
   },
   {
     condition: ({ waypointSymbol }, { getState }) => {
-      const waypoints = getWaypoints(getState());
+      const state = getState();
+      const waypoints = getWaypoints(state);
       return (
-        !Object.prototype.hasOwnProperty.call(waypoints, waypointSymbol) ||
+        (!isWaypointBeingFetched(state, waypointSymbol) &&
+          !Object.prototype.hasOwnProperty.call(waypoints, waypointSymbol)) ||
         !waypoints[waypointSymbol].isHydrated
       );
     },
@@ -111,7 +132,12 @@ export const fetchSystemWaypoints = createAppAsyncThunk(
   }
 );
 
-const initialState: UniverseState = { systems: {}, waypoints: {} };
+const initialState: UniverseState = {
+  systemStatuses: {},
+  systems: {},
+  waypointStatuses: {},
+  waypoints: {},
+};
 
 const universeSlice = createSlice({
   name: 'universe',
@@ -136,8 +162,12 @@ const universeSlice = createSlice({
           }
         }
       })
+      .addCase(fetchSystem.pending, (state, action) => {
+        state.systemStatuses[action.meta.arg] = 'PENDING';
+      })
       .addCase(fetchSystem.fulfilled, (state, action) => {
         const system = action.payload.data;
+        delete state.systemStatuses[action.meta.arg];
         state.systems[system.symbol] = { isHydrated: true, data: mapSystemFromResponse(system) };
 
         for (const waypoint of system.waypoints) {
@@ -148,6 +178,9 @@ const universeSlice = createSlice({
             };
           }
         }
+      })
+      .addCase(fetchSystem.rejected, (state, action) => {
+        state.systemStatuses[action.meta.arg] = 'FAILED';
       })
       .addCase(scanSystems.fulfilled, (state, action) => {
         const scannedSystems = action.payload.data.systems;
@@ -160,12 +193,19 @@ const universeSlice = createSlice({
           }
         }
       })
+      .addCase(fetchWaypoint.pending, (state, action) => {
+        state.waypointStatuses[action.meta.arg.waypointSymbol] = 'PENDING';
+      })
+      .addCase(fetchWaypoint.rejected, (state, action) => {
+        delete state.waypointStatuses[action.meta.arg.waypointSymbol];
+      })
       .addMatcher(
         isAnyOf(fetchWaypoint.fulfilled, fetchSystemWaypoints.fulfilled, scanWaypoints.fulfilled),
         (state, action) => {
           let waypoints: Waypoint[];
           if (fetchWaypoint.fulfilled.match(action)) {
             waypoints = [mapWaypointFromResponse(action.payload.data)];
+            state.waypointStatuses[action.meta.arg.waypointSymbol] = 'FAILED';
           } else if (fetchSystemWaypoints.fulfilled.match(action)) {
             waypoints = action.payload.data.map((waypoint) => mapWaypointFromResponse(waypoint));
           } else if (scanWaypoints.fulfilled.match(action)) {

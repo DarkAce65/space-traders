@@ -1,5 +1,7 @@
 import { external } from '@/schema';
 
+export type Subset<T, U extends T> = Extract<T, U>;
+
 export type LoadStatus = 'UNINITIALIZED' | 'PENDING' | 'SUCCEEDED' | 'FAILED';
 
 export type DataHookResponse<T> = (
