@@ -20,10 +20,10 @@ const useAgent = (): DataHookResponse<Agent> => {
     }
   }, [fetchData, status]);
 
-  if (status === 'UNINITIALIZED' || status === 'PENDING' || data === null) {
-    return { status: 'LOADING', data: null, refetch: fetchData };
-  } else if (status === 'FAILED') {
+  if (status === 'FAILED') {
     return { status: 'FAILED', data: null, refetch: fetchData };
+  } else if (status === 'UNINITIALIZED' || status === 'PENDING' || data === null) {
+    return { status: 'LOADING', data: null, refetch: fetchData };
   }
 
   return { status: 'READY', data, refetch: fetchData };
