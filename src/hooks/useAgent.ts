@@ -1,28 +1,32 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { fetchAgent, getAgent, getAgentFetchStatus } from '../data/slices/agentSlice';
 import { useAppDispatch, useAppSelector } from '../data/storeUtils';
-import { Agent, DataAndLoadStatus } from '../types';
+import { Agent, DataHookResponse } from '../types';
 
-const useAgent = (): DataAndLoadStatus<Agent> => {
+const useAgent = (): DataHookResponse<Agent> => {
   const dispatch = useAppDispatch();
 
   const status = useAppSelector(getAgentFetchStatus);
   const data = useAppSelector(getAgent);
 
+  const fetchData = useCallback(() => {
+    dispatch(fetchAgent());
+  }, [dispatch]);
+
   useEffect(() => {
-    if (status === 'UNINITIALIZED' || status === 'FAILED') {
-      dispatch(fetchAgent());
+    if (status === 'UNINITIALIZED') {
+      fetchData();
     }
-  }, [dispatch, status]);
+  }, [fetchData, status]);
 
   if (status === 'UNINITIALIZED' || status === 'PENDING' || data === null) {
-    return { status: 'LOADING', data: null };
+    return { status: 'LOADING', data: null, refetch: fetchData };
   } else if (status === 'FAILED') {
-    return { status: 'FAILED', data: null };
+    return { status: 'FAILED', data: null, refetch: fetchData };
   }
 
-  return { status: 'READY', data };
+  return { status: 'READY', data, refetch: fetchData };
 };
 
 export default useAgent;

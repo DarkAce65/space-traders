@@ -2,10 +2,11 @@ import { external } from '@/schema';
 
 export type LoadStatus = 'UNINITIALIZED' | 'PENDING' | 'SUCCEEDED' | 'FAILED';
 
-export type DataAndLoadStatus<T> =
+export type DataHookResponse<T> = (
   | { status: 'LOADING'; data: null }
   | { status: 'FAILED'; data: null }
-  | { status: 'READY'; data: T };
+  | { status: 'READY'; data: T }
+) & { refetch: () => void };
 
 export interface Agent {
   accountId: string;
